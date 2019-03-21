@@ -59,53 +59,9 @@ object VerbEraser {
     linesOfPOS.map(line => line.foldLeft("")(foldLogic))
   }
 
-  private def untagLines(list: List[String]): List[List[(String, String)]] = {
-    def untag(tagged: String): (String, String) =
-      if (tagged.indexOf('_') == -1) (tagged, " ")
-      else
-        (tagged.substring(0, tagged.indexOf('_')), tagged.substring(tagged.indexOf('_') + 1))
-
-    val linesSeparatedBySpace: List[List[String]] = list.map(line => line.split(' ').toList)
-    linesSeparatedBySpace.map(line => line.map(word => untag(word)))
-  }
-
-  private def substituteLines(list: List[List[(String, String)]]): List[List[String]] = {
-    def getSubstitute(pair: (String, String)): String = {
-      def isPunctuation(pair: (String, String)): Boolean = {
-        val tag = pair._2
-        if (tag.charAt(0) >= 33 && tag.charAt(0) <= 47) true
-        else false
-      }
-
-      def isVerb(pair: (String, String)): Boolean = {
-        val raw: String = pair._1
-        val tag: String = pair._2
-        if (tag.charAt(0) == 'V') true
-        else if (tag.equals("MD")) true
-        else if (raw.length() > 3 && raw.substring(raw.length() - 3).equals("ing")) true
-        else if (raw.length() > 3 && raw.substring(raw.length() - 2).equals("ed")) true
-        else false
-      }
-
-      if (isPunctuation(pair)) pair._1
-      else if (isVerb(pair)) " ________"
-      else " " + pair._1
-    }
-
-    list match {
-      case line :: otherLines =>
-        line.map(pair => getSubstitute(pair)) :: substituteLines(otherLines)
-        case Nil => Nil
-    }
-  }
-
   def run = {
     val lines: List[String] = readLines(inputPath)
     val taggedLines: List[String] = tagLines(lines)
-//    val untaggedLines: List[List[(String, String)]] = untagLines(taggedLines)
-//    val substitutedLines: List[List[String]] = substituteLines(untaggedLines)
-//    val resultLines: List[String] = substitutedLines.map(line => line.reduce(_ + _))
-//    val frontSpaceRemoved: List[String] = resultLines.map(line => line.substring(1))
     val linesOfPOS: List[List[PartOfSpeech]] = getPartsOfSpeech(taggedLines)
     val reconstructedLines: List[String] = reconstructLines(linesOfPOS)
 
